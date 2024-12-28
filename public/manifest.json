@@ -1,9 +1,13 @@
 {
-    "name": "Clash Royale Deck Builder",
-    "short_name": "CR Deck Pro",
-    "description": "Build personalized Clash Royale decks",
-    "start_url": "/",
-    "display": "standalone",
+    "orientation": "any",
+  "display": "standalone",
+  "dir": "auto",
+  "lang": "en-US",
+  "name": "ClashDeckPro - Clash Royale Deck Builder",
+  "short_name": "ClashDeckPro",
+  "start_url": "/",
+  "scope": "/",
+  "description": "Create personalized Clash Royale decks with AI-powered recommendations based on your playstyle and stats",
     "background_color": "#ffffff",
     "theme_color": "#000000",
     "icons": [
