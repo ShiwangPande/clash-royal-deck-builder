@@ -13,8 +13,22 @@ import {
   Search,
   Loader2,
   Shield,
-  Zap
+  Zap,
+  Users,
+  Gift,
+  Award,
+  Scroll,
+  Info,
+  Flame, // Add this
+  Shield as DefenseIcon, // Add this
+  Zap as SpeedIcon // Add this
 } from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
   Tooltip,
   TooltipContent,
@@ -22,6 +36,12 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import OpenAI from 'openai';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 
 const API_KEY1 = process.env.NEXT_PUBLIC_API_KEY_1;
 const API_KEY2 = process.env.NEXT_PUBLIC_API_KEY_2;
@@ -42,7 +62,7 @@ export default function DeckBuilder() {
   const [playerData, setPlayerData] = useState<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [cards, setCards] = useState<CardType[]>([]);
-  const [recommendedDeck, setRecommendedDeck] = useState<CardType[]>([]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -114,11 +134,15 @@ export default function DeckBuilder() {
     };
   };
 
+  const [aggressiveDeck, setAggressiveDeck] = useState<CardType[]>([]);
+  const [controlDeck, setControlDeck] = useState<CardType[]>([]);
+  const [speedDeck, setSpeedDeck] = useState<CardType[]>([]);
+
   const generateDeckRecommendation = async (playerData: { trophies: number; wins: number; losses: number; threeCrownWins: number; challengeMaxWins: number; warDayWins: number; badges: { name: string; level: number }[]; }, availableCards: CardType[]): Promise<void> => {
     const analysis = analyzePlayerProfile(playerData);
   
-    const prompt = `
-    As a Clash Royale expert, generate a balanced 8-card deck based on this player profile:
+    const generatePrompt = (style: string) => `
+    As a Clash Royale expert, generate a ${style} deck based on this player profile:
     
     Player Analysis:
     - Playstyle: ${analysis.playstyle}
@@ -133,51 +157,121 @@ export default function DeckBuilder() {
     3. Include at least 1 building
     4. Average elixir cost should be between 3.5-4.3
     5. Must have cards that synergize well together
-    6. Consider player's skill level and playstyle
-    7. Response format: Return only the card names separated by commas
+    6. Consider player's skill level
+    7. Optimize for ${style} playstyle
+    8. Response format: Return only the card names separated by commas
   
     Available cards:
     ${availableCards.map(card => `${card.name}`).join(', ')}
     `;
-  
+
     try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [{
-          role: "system",
-          content: "You are a Clash Royale expert deck builder. Provide deck recommendations as comma-separated card names only."
-        }, {
-          role: "user",
-          content: prompt
-        }],
-        temperature: 0.7,
-        max_tokens: 150
-      });
-  
-      const recommendedCardNames = response.choices[0].message.content?.trim().split(',').map(name => name.trim());
-      
-      if (!recommendedCardNames || recommendedCardNames.length !== 8) {
-        throw new Error('Invalid deck recommendation received');
-      }
-  
-      const deck = recommendedCardNames.map(cardName => 
-        availableCards.find(card => card.name.toLowerCase() === cardName.toLowerCase())
-      ).filter(Boolean) as CardType[];
-  
-      if (deck.length === 8) {
-        setRecommendedDeck(deck);
-      } else {
-        throw new Error('Could not find all recommended cards in available cards');
-      }
+      const [aggressiveResponse, controlResponse, speedResponse] = await Promise.all([
+        openai.chat.completions.create({
+          model: "gpt-4",
+          messages: [{
+            role: "system",
+            content: "You are a Clash Royale expert deck builder. Provide aggressive deck recommendations."
+          }, {
+            role: "user",
+            content: generatePrompt("aggressive")
+          }],
+          temperature: 0.7,
+          max_tokens: 150
+        }),
+        openai.chat.completions.create({
+          model: "gpt-4",
+          messages: [{
+            role: "system",
+            content: "You are a Clash Royale expert deck builder. Provide control deck recommendations."
+          }, {
+            role: "user",
+            content: generatePrompt("control")
+          }],
+          temperature: 0.7,
+          max_tokens: 150
+        }),
+        openai.chat.completions.create({
+          model: "gpt-4",
+          messages: [{
+            role: "system",
+            content: "You are a Clash Royale expert deck builder. Provide fast cycle deck recommendations."
+          }, {
+            role: "user",
+            content: generatePrompt("fast cycle")
+          }],
+          temperature: 0.7,
+          max_tokens: 150
+        })
+      ]);
+
+      const processResponse = (response: string) => {
+        const cardNames = response.trim().split(',').map(name => name.trim());
+        return cardNames.map(cardName => 
+          availableCards.find(card => card.name.toLowerCase() === cardName.toLowerCase())
+        ).filter(Boolean) as CardType[];
+      };
+
+      const aggressiveDeck = processResponse(aggressiveResponse.choices[0].message.content || '');
+      const controlDeck = processResponse(controlResponse.choices[0].message.content || '');
+      const speedDeck = processResponse(speedResponse.choices[0].message.content || '');
+
+    
+      setAggressiveDeck(aggressiveDeck);
+      setControlDeck(controlDeck);
+      setSpeedDeck(speedDeck);
+
     } catch (error) {
-      console.error('Error generating deck recommendation:', error);
-      // Fallback to a basic deck if AI fails
-      const basicDeck = availableCards
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 8);
-      setRecommendedDeck(basicDeck);
+      console.error('Error generating deck recommendations:', error);
+      // Fallback to basic decks if AI fails
+      const generateBasicDeck = () => availableCards.sort(() => Math.random() - 0.5).slice(0, 8);
+    
+      setAggressiveDeck(generateBasicDeck());
+      setControlDeck(generateBasicDeck());
+      setSpeedDeck(generateBasicDeck());
     }
   };
+
+  const DeckDisplay = ({ deck, title, description, icon: Icon }: { deck: CardType[], title: string, description: string, icon: React.ComponentType<{ className?: string }> }) => (
+    <Card className="h-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Icon className="text-yellow-500" />
+          {title}
+        </CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <TooltipProvider>
+          <div className="grid grid-cols-4 gap-4">
+            {deck.map((card, index) => (
+              <Tooltip key={`${card.id}-${index}`}>
+                <TooltipTrigger>
+                  <div className="relative group">
+                    <Image
+                      src={card.iconUrls.medium}
+                      alt={card.name}
+                      width={64}
+                      height={64}
+                      className="w-16 h-16 mx-auto transition-transform group-hover:scale-110"
+                    />
+                    <div className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
+                      {card.elixirCost}
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="font-bold">{card.name}</p>
+                  <p className="text-xs">Rarity: {card.rarity}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+        </TooltipProvider>
+      </CardContent>
+    </Card>
+  );
+
 
   const fetchWithApiKey = async (apiKey: string) => {
     const formattedTag = playerTag.startsWith('#') ? 
@@ -244,6 +338,30 @@ export default function DeckBuilder() {
 
   return (
     <main className="container mx-auto p-4 space-y-6">
+            <Card className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Info className="text-emerald-500" />
+            How to Use
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Accordion type="single" collapsible>
+            <AccordionItem value="instructions">
+              <AccordionTrigger>View Instructions</AccordionTrigger>
+              <AccordionContent>
+                <ol className="list-decimal ml-4 space-y-2">
+                  <li>Find your player tag in Clash Royale by tapping your profile</li>
+                  <li>Enter your tag with or without the # symbol (e.g., #CCQ8UY88Q or CCQ8UY88Q)</li>
+                  <li>Click &apos;Fetch Data&apos; to get your stats and deck recommendation</li>
+                  <li>Hover over recommended cards to see details</li>
+                  <li>The recommendation is based on your playstyle and stats</li>
+                </ol>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </CardContent>
+      </Card>
       <Card className="bg-gradient-to-r from-purple-500/10 to-blue-500/10">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -287,6 +405,8 @@ export default function DeckBuilder() {
 
       {playerData && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-6">
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -295,27 +415,79 @@ export default function DeckBuilder() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Trophy className="text-yellow-500" />
-                  <span>Trophies: {playerData.trophies}</span>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Crown className="text-yellow-500" />
+                      <span className="font-semibold">{playerData.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Trophy className="text-yellow-500" />
+                      <span>Trophies: {playerData.trophies}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Award className="text-purple-500" />
+                      <span>Best: {playerData.bestTrophies}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="text-blue-500" />
+                      <span>Level: {playerData.expLevel}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Swords className="text-red-500" />
+                      <span>Wins: {playerData.wins}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Gamepad2 className="text-green-500" />
+                      <span>Battles: {playerData.battleCount}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Crown className="text-amber-500" />
+                      <span>3 Crown: {playerData.threeCrownWins}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Gift className="text-pink-500" />
+                      <span>Donations: {playerData.totalDonations}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Crown className="text-purple-500" />
-                  <span>Level: {playerData.expLevel}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Swords className="text-red-500" />
-                  <span>Wins: {playerData.wins}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Gamepad2 className="text-green-500" />
-                  <span>Arena: {playerData.arena?.name}</span>
-                </div>
-              </div>
-            </CardContent>
+              </CardContent>
           </Card>
-
+          <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Scroll className="text-violet-500" />
+                  Battle Statistics
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span>Win Rate</span>
+                    <span className="font-semibold">
+                      {((playerData.wins / (playerData.wins + playerData.losses)) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Three Crown Rate</span>
+                    <span className="font-semibold">
+                      {((playerData.threeCrownWins / playerData.wins) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Challenge Max Wins</span>
+                    <span className="font-semibold">{playerData.challengeMaxWins}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>War Day Wins</span>
+                    <span className="font-semibold">{playerData.warDayWins}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            </div>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -324,32 +496,37 @@ export default function DeckBuilder() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <TooltipProvider>
-                <div className="grid grid-cols-4 gap-4">
-                  {recommendedDeck.map((card, index) => (
-                    <Tooltip key={`${card.id}-${index}`}>
-                      <TooltipTrigger>
-                        <div className="relative group">
-                          <Image
-                            src={card.iconUrls.medium}
-                            alt={card.name}
-                            width={64}
-                            height={64}
-                            className="w-16 h-16 mx-auto transition-transform group-hover:scale-110"
-                          />
-                          <div className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
-                            {card.elixirCost}
-                          </div>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="font-bold">{card.name}</p>
-                        <p className="text-xs">Rarity: {card.rarity}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
-                </div>
-              </TooltipProvider>
+            <Tabs defaultValue="aggressive" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="aggressive">Aggressive</TabsTrigger>
+                  <TabsTrigger value="control">Control</TabsTrigger>
+                  <TabsTrigger value="speed">Speed Cycle</TabsTrigger>
+                </TabsList>
+                <TabsContent value="aggressive">
+                  <DeckDisplay
+                    deck={aggressiveDeck}
+                    title="Aggressive Deck"
+                    description="High damage output, designed for quick victories"
+                    icon={Flame}
+                  />
+                </TabsContent>
+                <TabsContent value="control">
+                  <DeckDisplay
+                    deck={controlDeck}
+                    title="Control Deck"
+                    description="Defensive playstyle with counter-push potential"
+                    icon={DefenseIcon}
+                  />
+                </TabsContent>
+                <TabsContent value="speed">
+                  <DeckDisplay
+                    deck={speedDeck}
+                    title="Speed Cycle Deck"
+                    description="Fast cycle for constant pressure"
+                    icon={SpeedIcon}
+                  />
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </div>
