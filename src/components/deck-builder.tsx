@@ -184,7 +184,7 @@ export default function DeckBuilder() {
       playerTag.substring(1) : playerTag; // Remove leading '#' if present
   
     try {
-      const playerRes = await fetch(`${BASE_URL}/players/%${formattedTag}`, {
+      const playerRes = await fetch(`${BASE_URL}/players/%23${formattedTag}`, {
         headers: {
           'Authorization': apiKey
         }
