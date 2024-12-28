@@ -37,7 +37,9 @@ const openai = new OpenAI({
 
 export default function DeckBuilder() {
   const [playerTag, setPlayerTag] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [playerData, setPlayerData] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [cards, setCards] = useState<CardType[]>([]);
   const [recommendedDeck, setRecommendedDeck] = useState<CardType[]>([]);
   const [loading, setLoading] = useState(false);
@@ -61,6 +63,7 @@ export default function DeckBuilder() {
     weaknessAreas: string[];
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const analyzePlayerProfile = (playerData: any): PlayerAnalysis => {
     const winRate = (playerData.wins / (playerData.wins + playerData.losses)) * 100;
     const threeCrownRate = (playerData.threeCrownWins / playerData.wins) * 100;
