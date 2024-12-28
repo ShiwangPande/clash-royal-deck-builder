@@ -23,15 +23,15 @@ import {
 } from '@/components/ui/tooltip';
 import OpenAI from 'openai';
 
-const API_KEY1 = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjgwMTc2YmE3LTM4NTgtNDVmNC1hOTU0LTdkOTNjZmMwZjhkZSIsImlhdCI6MTczNTM5NTkxMCwic3ViIjoiZGV2ZWxvcGVyLzA2NjA5MDNlLTM2OTItNzg2Yy1mN2M2LTQ2OTZmN2ZhMDkyMCIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyI0NS43OS4yMTguNzkiXSwidHlwZSI6ImNsaWVudCJ9XX0.ZDzd0ZIv9aXGwy339hnk8_C3HIEW_jAEcIsHehYOtgdEUIaTMCa4nUf5eaKps4jr4eZ7NDKQTLsUumNUKWDwsA';
-const API_KEY2 = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjkzMzJlNDVkLWE1YzctNDBjMi05ODMxLTY4NGNkZDJhZWEyOSIsImlhdCI6MTczNTM5NzYzMywic3ViIjoiZGV2ZWxvcGVyLzA2NjA5MDNlLTM2OTItNzg2Yy1mN2M2LTQ2OTZmN2ZhMDkyMCIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyI0NS43OS4yMTguNzkiXSwidHlwZSI6ImNsaWVudCJ9XX0.UF3_MaxxnmmFnQdxvP02o97Pj8I8vX33AUTpxVBVhXh6_o7Ye1-rA9YD2MoutgZ1G3S9RP9pzLx1wJd0MQ_NHw';
-const API_KEY3 = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImU1ZjljN2UyLTkxYjQtNGQwNS04NjQ4LTUyYjIwMWJhZjQ0ZCIsImlhdCI6MTczNTQwNzA3MCwic3ViIjoiZGV2ZWxvcGVyLzA2NjA5MDNlLTM2OTItNzg2Yy1mN2M2LTQ2OTZmN2ZhMDkyMCIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyI0NS43OS4yMTguNzkiXSwidHlwZSI6ImNsaWVudCJ9XX0.N_GiD8BY8lnoflrc4zL2BCTj-9qoRsG7jjV2TrGJe4dWPXQ778xPSqTgagmRBSZ0GfIB72bjzUbOhVwMoRhdjw';
-const API_KEY4 = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjU3ZmEwZDgyLWVhZDItNGY4Mi1iOGJhLTY2NWU1NDIwYjM0MiIsImlhdCI6MTczNTQwNzMwMywic3ViIjoiZGV2ZWxvcGVyLzA2NjA5MDNlLTM2OTItNzg2Yy1mN2M2LTQ2OTZmN2ZhMDkyMCIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyI0NS43OS4yMTguNzkiXSwidHlwZSI6ImNsaWVudCJ9XX0.Cw05ESL_0altztsXm-fxbLQ1mLQgaAYh4RiRSpOZxwXJtR2tEwDmmENx0-3b0tf1bEOULrcrR2fvEdU7Me2uVA';
-const BASE_URL = 'https://proxy.royaleapi.dev/v1';
+const API_KEY1 = process.env.NEXT_PUBLIC_API_KEY_1;
+const API_KEY2 = process.env.NEXT_PUBLIC_API_KEY_2;
+const API_KEY3 = process.env.NEXT_PUBLIC_API_KEY_3;
+const API_KEY4 = process.env.NEXT_PUBLIC_API_KEY_4;
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 
 const openai = new OpenAI({
-  apiKey: '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',
+  apiKey: process.env.NEXT_PUBLIC_API_KEY,
   dangerouslyAllowBrowser: true // Only for development
 });
 
@@ -214,7 +214,9 @@ export default function DeckBuilder() {
   
     for (let i = 0; i < apiKeys.length; i++) {
       try {
-        await fetchWithApiKey(apiKeys[i]);
+        if (apiKeys[i]) {
+          await fetchWithApiKey(apiKeys[i]!);
+        }
         setError(''); 
         return; 
       } catch (error) {
