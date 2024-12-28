@@ -1,30 +1,35 @@
-import type { NextConfig } from "next";
+import type { PWAConfig } from 'next-pwa';
 import withPWA from "next-pwa";
 
-const nextConfig: NextConfig = {
+// Explicitly type the config without using NextConfig type
+const config = {
   images: {
     domains: ['api-assets.clashroyale.com'],
   },
 };
 
-export default withPWA({
-  ...nextConfig, // Include existing configuration
-  dest: 'public', // Service worker and related files output directory
-  disable: process.env.NODE_ENV === 'development', // Disable PWA in development mode
-  register: true, // Auto register service worker
-  skipWaiting: true, // Skip waiting for service worker activation
+// Define PWA config separately
+const pwaConfig: PWAConfig = {
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+  register: true,
+  skipWaiting: true,
   runtimeCaching: [
     {
-      urlPattern: /.*\.(png|jpg|jpeg|gif|webp|svg)/, // Cache images
-      handler: 'CacheFirst', // Use CacheFirst strategy for images
+      urlPattern: /^https:\/\/api-assets\.clashroyale\.com\/.*/i,
+      handler: 'CacheFirst',
       options: {
-        cacheName: 'image-cache',
+        cacheName: 'clash-royale-images',
         expiration: {
-          maxEntries: 50, // Cache up to 50 images
-          maxAgeSeconds: 60 * 60 * 24 * 7, // Cache for 1 week
+          maxEntries: 100,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
         },
       },
-    },
-    // Add other caching strategies if necessary (e.g., for JS, CSS, etc.)
+    }
   ],
-});
+};
+
+// Combine configs without explicit typing
+const nextConfig = withPWA(pwaConfig)(config);
+
+export default nextConfig;
