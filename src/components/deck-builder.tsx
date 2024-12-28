@@ -27,7 +27,8 @@ const API_KEY1 = process.env.NEXT_PUBLIC_API_KEY_1;
 const API_KEY2 = process.env.NEXT_PUBLIC_API_KEY_2;
 const API_KEY3 = process.env.NEXT_PUBLIC_API_KEY_3;
 const API_KEY4 = process.env.NEXT_PUBLIC_API_KEY_4;
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://proxy.royaleapi.dev/v1';
+
 
 
 const openai = new OpenAI({
@@ -179,34 +180,39 @@ export default function DeckBuilder() {
   };
 
   const fetchWithApiKey = async (apiKey: string) => {
-    const formattedTag = playerTag.replace(/^#/, ''); // Remove leading '#' if present
-
-    const playerRes = await fetch(`${BASE_URL}/players/%${formattedTag}`, {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`
+    const formattedTag = playerTag.startsWith('#') ? 
+      playerTag.substring(1) : playerTag; // Remove leading '#' if present
+  
+    try {
+      const playerRes = await fetch(`${BASE_URL}/players/%${formattedTag}`, {
+        headers: {
+          'Authorization': apiKey
+        }
+      });
+  
+      if (!playerRes.ok) {
+        throw new Error('Player not found');
       }
-    });
-
-    if (!playerRes.ok) {
-      throw new Error('Player not found');
-    }
-
-    const playerData = await playerRes.json();
-    setPlayerData(playerData);
-
-    const cardsRes = await fetch(`${BASE_URL}/cards`, {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`
+  
+      const playerData = await playerRes.json();
+      setPlayerData(playerData);
+  
+      const cardsRes = await fetch(`${BASE_URL}/cards`, {
+        headers: {
+          'Authorization': apiKey
+        }
+      });
+  
+      if (!cardsRes.ok) {
+        throw new Error('Failed to fetch cards');
       }
-    });
-
-    if (!cardsRes.ok) {
-      throw new Error('Failed to fetch cards');
+  
+      const cardsData = await cardsRes.json();
+      setCards(cardsData.items);
+      await generateDeckRecommendation(playerData, cardsData.items);
+    } catch (error) {
+      throw error;
     }
-
-    const cardsData = await cardsRes.json();
-    setCards(cardsData.items);
-    await generateDeckRecommendation(playerData, cardsData.items);
   };
 
   const fetchPlayerData = async () => {
