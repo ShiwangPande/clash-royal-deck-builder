@@ -73,16 +73,31 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* PWA Metadata */}
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#000000" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="ClashDeckPro" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+        {/* Favicon */}
         <link rel="icon" href="/icon/favicon.ico" sizes="any" />
         <link
           rel="apple-touch-icon"
           sizes="180x180"
           href="/icon/apple-icon-180x180.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/icon/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/icon/favicon-16x16.png"
         />
       </head>
       <body
