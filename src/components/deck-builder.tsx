@@ -27,7 +27,7 @@ const API_KEY1 = process.env.NEXT_PUBLIC_API_KEY_1;
 const API_KEY2 = process.env.NEXT_PUBLIC_API_KEY_2;
 const API_KEY3 = process.env.NEXT_PUBLIC_API_KEY_3;
 const API_KEY4 = process.env.NEXT_PUBLIC_API_KEY_4;
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://proxy.royaleapi.dev/v1';
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 
 
