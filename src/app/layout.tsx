@@ -43,6 +43,7 @@ export default function RootLayout({
       <head>
         <meta name="application-name" content="ClashDeckPro" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="google-adsense-account" content="ca-pub-7495213287718710" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
