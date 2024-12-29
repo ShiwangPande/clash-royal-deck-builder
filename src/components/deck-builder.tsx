@@ -730,34 +730,34 @@ export default function DeckBuilder() {
               </Card>
             </div>
                <Card className="bg-gradient-to-br from-white/90 to-indigo-50/90 dark:from-slate-800/90 dark:to-indigo-900/90 backdrop-blur-sm border border-indigo-200 dark:border-indigo-500/20 shadow-lg shadow-indigo-500/10">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
-                    <Zap className="text-indigo-500" />
-                    Deck Recommendations
-                  </CardTitle>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => shareDeck(aggressiveDeck)}
-                      className="bg-white/50 dark:bg-slate-800/50"
-                    >
-                      <Share2 className="h-4 w-4 mr-1" />
-                      Share
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => saveDeck('aggressive', aggressiveDeck)}
-                      className="bg-white/50 dark:bg-slate-800/50"
-                    >
-                      <Download className="h-4 w-4 mr-1" />
-                      Save
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
+               <CardHeader className="p-4 sm:p-6">
+  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-2">
+    <CardTitle className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 text-sm sm:text-base">
+      <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500" />
+      Deck Recommendations
+    </CardTitle>
+    <div className="flex flex-wrap w-full sm:w-auto gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => shareDeck(aggressiveDeck)}
+        className="flex-1 sm:flex-initial text-xs sm:text-sm bg-white/50 dark:bg-slate-800/50 min-h-[36px] sm:min-h-[32px]"
+      >
+        <Share2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+        Share
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => saveDeck('aggressive', aggressiveDeck)}
+        className="flex-1 sm:flex-initial text-xs sm:text-sm bg-white/50 dark:bg-slate-800/50 min-h-[36px] sm:min-h-[32px]"
+      >
+        <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+        Save
+      </Button>
+    </div>
+  </div>
+</CardHeader>
               <CardContent>
                 <Tabs defaultValue="aggressive" className="w-full">
                   <TabsList className="grid w-full grid-cols-3 mb-4 bg-slate-100 dark:bg-slate-700">
