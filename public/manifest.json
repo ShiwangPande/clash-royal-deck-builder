@@ -1,4 +1,4 @@
-{
+ {
     "orientation": "any",
   "display": "standalone",
   "dir": "auto",
@@ -24,4 +24,4 @@
           "type": "image/png"
         }
       ]
-  }
+    }
